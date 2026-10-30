@@ -1,0 +1,29 @@
+id: REC-ESC-001
+title: Failed policy rule was not escalated
+scope: trace
+severity: high
+category: escalation
+check: failed_rule_not_escalated
+params:
+  # Conservative outcomes that are a legitimate direct response to a failed rule.
+  exempt_action_types: [reject, decline, deny, block]
+applies_to:
+  operating_domains: [autonomous, supervised]
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)
+  - framework: eu_mar
+    ref: Art. 16(2)
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+  - framework: finra
+    ref: Rule 3110
+description: >
+  At least one `policy_evaluation` verdict is `fail`, yet the decision was neither escalated nor
+  reviewed by a human, and the action was not a conservative one such as reject or decline. An
+  agent that sees a red flag and closes it on its own takes away the human check the
+  surveillance or AML program depends on.
+remediation: >
+  Escalate (`final_action.escalated: true` with an escalation_reason) whenever a policy rule
+  fails, or record the human review that cleared it.
+fields: [policy_evaluation, final_action.escalated, human_disposition]

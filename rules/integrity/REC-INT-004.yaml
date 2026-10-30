@@ -1,0 +1,20 @@
+id: REC-INT-004
+title: record_id is not a canonical UUIDv4
+scope: trace
+severity: medium
+category: integrity
+check: record_id_not_uuid4
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(1)
+  - framework: sec
+    ref: 17a-4(a)
+  - framework: finra
+    ref: Rule 4511
+  - framework: record_spec
+    ref: record_id (UUIDv4)
+description: >
+  `record_id` is not a lowercase, hyphenated UUIDv4. The schema's `uuid` format is not enforced
+  by validators, so non-random or reused IDs can get through and break unique retrieval.
+remediation: Generate record_id with a UUIDv4 generator (e.g. Python `uuid.uuid4()`).
+fields: [record_id]

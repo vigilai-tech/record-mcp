@@ -1,0 +1,21 @@
+id: REC-ESC-004
+title: Inconclusive or low-confidence verdict left unresolved
+scope: trace
+severity: medium
+category: escalation
+check: low_confidence_unresolved
+params:
+  min_confidence: 0.6
+citations:
+  - framework: eu_ai_act
+    ref: Art. 13(3)(d)
+  - framework: eu_ai_act
+    ref: Art. 14(4)
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+description: >
+  A policy verdict is `inconclusive`, or has confidence below the threshold, and the decision was
+  neither escalated nor reviewed by a human. Decisions built on uncertain evaluations should go
+  to a person rather than be finalised automatically.
+remediation: Escalate or route for review whenever any applicable verdict is inconclusive or low-confidence.
+fields: [policy_evaluation.verdict, policy_evaluation.confidence]

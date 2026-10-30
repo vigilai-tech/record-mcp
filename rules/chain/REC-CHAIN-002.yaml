@@ -1,0 +1,19 @@
+id: REC-CHAIN-002
+title: Agent version changed mid-case
+scope: chain
+severity: low
+category: integrity
+check: agent_version_drift
+citations:
+  - framework: eu_ai_act
+    ref: Art. 13(3)(c)
+  - framework: mifid2
+    ref: RTS 6 Art. 11
+description: >
+  One agent ran more than one `agent_version` within the same case or investigation thread, so
+  the case's decisions were made by different model/code versions. Version changes mid-case
+  should be deliberate and documented.
+remediation: >
+  Pin the agent version for the life of a case, or document the change-management approval for
+  the upgrade.
+fields: [agent_id, agent_version, decision_lineage.case_id]

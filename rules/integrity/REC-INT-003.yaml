@@ -1,0 +1,20 @@
+id: REC-INT-003
+title: Escalation or filing has no downstream outcome link
+scope: trace
+severity: medium
+category: integrity
+check: outcome_not_linked
+params:
+  filing_actions: [file_sar, draft_sar, submit_sar, file_str, submit_stor]
+citations:
+  - framework: eu_mar
+    ref: Art. 16
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+  - framework: finra
+    ref: Rule 4511
+description: >
+  The decision escalated the case or produced a filing, but `outcome_linkage` does not point to
+  the downstream ticket or filing. That breaks the closed-loop trail from alert to outcome.
+remediation: Write the escalation ticket or filing reference into `outcome_linkage` when it is created.
+fields: [final_action, outcome_linkage]

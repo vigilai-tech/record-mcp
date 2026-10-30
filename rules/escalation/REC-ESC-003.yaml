@@ -1,0 +1,23 @@
+id: REC-ESC-003
+title: High-severity autonomous decision not escalated
+scope: trace
+severity: high
+category: escalation
+check: autonomous_high_severity_not_escalated
+params:
+  severity_threshold: 7.0
+applies_to:
+  operating_domains: [autonomous]
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)(e)
+  - framework: mifid2
+    ref: RTS 6 Art. 15
+description: >
+  An autonomous agent scored the case at or above the severity threshold but did not escalate
+  it. High-risk outcomes need a path for human intervention, even when the agent normally runs
+  without supervision.
+remediation: >
+  Escalate when `final_action.severity_score` reaches the threshold, or adjust the threshold in a
+  firm rule pack.
+fields: [final_action.severity_score, final_action.escalated]

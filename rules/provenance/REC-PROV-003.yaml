@@ -1,0 +1,19 @@
+id: REC-PROV-003
+title: Data payload hash is not a SHA-256 digest
+scope: trace
+severity: high
+category: provenance
+check: invalid_payload_hash
+citations:
+  - framework: sec
+    ref: 17a-4(f)
+  - framework: eu_ai_act
+    ref: Art. 12(2)(b)
+  - framework: mifid2
+    ref: RTS 6 Art. 28
+description: >
+  A `data_at_decision[].payload_hash` is not a 64-character hex SHA-256 digest. The hash is the
+  integrity proof for the data the agent acted on, and a malformed hash cannot be used to verify
+  it.
+remediation: Hash the raw response bytes with SHA-256 and store the lowercase hex digest.
+fields: [data_at_decision.payload_hash]

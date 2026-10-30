@@ -1,0 +1,26 @@
+id: REC-HO-001
+title: Supervised decision took effect without recorded human review
+scope: trace
+severity: high
+category: human_oversight
+check: supervised_without_review
+applies_to:
+  operating_domains: [supervised]
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)
+  - framework: eu_ai_act
+    ref: Art. 26(2)
+  - framework: finra
+    ref: Rule 3110
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+description: >
+  The trace declares `operating_domain: supervised`, but it has no `human_disposition` and the
+  decision was not escalated. A supervised agent's output must either be reviewed by a human or
+  routed to one. Here neither happened, so the declared oversight did not operate.
+remediation: >
+  Route supervised decisions to a reviewer and write the reviewer's action back to
+  `human_disposition`. If no human review is intended, declare `operating_domain: autonomous` and
+  apply the controls for autonomous decisions.
+fields: [operating_domain, human_disposition, final_action.escalated]

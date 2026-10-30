@@ -1,0 +1,276 @@
+{
+  "_comments": {
+    "overview": "This RECORD document captures a single decision turn by an LLM agent (claude-opus-4-6) acting as a Level 1 MiFID II trade-surveillance analyst. The upstream surveillance platform detected a potential layering alert and invoked the LLM with a structured prompt. The LLM then called three external APIs to gather evidence, reasoned through five RTS 6 policy rules, and produced a disposition. Data flows in this order: (1) upstream ML detection model runs → computes influencing_parameters[weight_source=ml_model] → injected into prompt; (2) LLM receives prompt → calls tools → receives tool_results; (3) LLM produces chain_of_thought + policy_evaluation + final_action; (4) RECORD document is emitted capturing all layers.",
+    "prompt": "FIELD TYPE: LLM input. The complete text delivered to the LLM before it began reasoning — system role, regulatory context, alert summary, and tool descriptions. This is the full input the LLM saw. EU AI Act Art. 12 requires verbatim capture. The influencing_parameters values (OTR=47.3, cancel_ratio=91%) appear here as context injected by the orchestration layer from the upstream detection model output.",
+    "influencing_parameters": "FIELD TYPE: Two-tier. (A) weight_source=ml_model — five numeric features computed by the upstream surveillance detection model (e.g. gradient-boosted tree trained on historical layering cases) BEFORE the LLM was invoked. Weights are SHAP-style normalised feature importance from that model, not from the LLM. These were serialised into the prompt as context. (B) weight_source=llm_self_reported — three factors the LLM itself identified as decisive in chain_of_thought step 9. These are qualitative inferences (directional cancel bias, exemption inapplicability, recidivism pattern) that the upstream ML model did not capture. Weights are the LLM's self-assessed ordinal salience, normalised to sum to 1.0.",
+    "data_at_decision": "FIELD TYPE: Data provenance inventory (pre-call). A snapshot of the external data sources queried and the SHA-256 hash of each raw response payload. Purpose: tamper-evidence. A regulator or auditor can re-query the same source with the same params and verify the hash matches, proving the LLM saw accurate data. This is distinct from tool_results — data_at_decision is the integrity record; tool_results is the actual payload the LLM read.",
+    "tools_accessed": "FIELD TYPE: API call request log (LLM-initiated). Ordered list of external tool invocations the LLM made during its reasoning loop. Each entry is a request: tool name, UTC timestamp of the call, and the exact query params sent. The LLM decided to call these tools based on its reasoning — they are not pre-fetched. Three tools called: nasdaq_level2_feed (L2 order book), participant_profile (account history + prior alerts), consolidated_tape (market statistics).",
+    "tool_results": "FIELD TYPE: API call response log (LLM-received). Parallel array to tools_accessed, joined by tool_name. Each entry is the structured response the LLM received. Together, tools_accessed + tool_results constitute the complete record of every external data fetch the LLM performed while reasoning. The LLM read these payloads and incorporated them into its chain_of_thought.",
+    "chain_of_thought": "FIELD TYPE: LLM reasoning output. The LLM's intermediate reasoning steps, captured verbatim in the order produced. Steps 1–8 are the LLM's analytical process: retrieving data, evaluating policy rules, testing the market-making exemption hypothesis, and reaching a conclusion. Step 9 is the self-reporting step — the LLM explicitly names which factors it found most decisive and why, independent of the upstream ML model's feature weights. Step 9 is the source of truth for influencing_parameters[weight_source=llm_self_reported].",
+    "policy_evaluation": "FIELD TYPE: LLM output. The LLM's structured verdict on each applicable MiFID II RTS 6 policy rule. Produced entirely by the LLM — not by the upstream detection model, which only flagged the alert. Each verdict (pass/fail/inconclusive/not_applicable) and confidence score reflects the LLM's judgment after reading tool results and applying regulatory logic.",
+    "final_action": "FIELD TYPE: LLM output. The LLM's ultimate recommendation: action type, free-text disposition narrative, severity score (0–10), and whether it escalated. escalated=true triggered the outcome_linkage record in the downstream case management system."
+  },
+  "record_id": "a3f8c2e1-7b4d-4f9a-b3e6-2d1c8a0f5e7b",
+  "timestamp": "2026-05-20T09:47:33.412Z",
+  "agent_id": "trade-surveillance-l1-agent",
+  "agent_version": "3.2.1",
+  "schema_version": "0.1.0",
+  "model_id": "claude-opus-4-6",
+  "jurisdiction": "EU",
+  "authority_basis": [
+    "mifid2.rts6",
+    "mifid2.art_48",
+    "eu_ai_act.art_86",
+    "eu_ai_act.art_12"
+  ],
+  "operating_domain": "supervised",
+  "openinference_span_id": "7f3a9c2e4b8d1f6a",
+
+  "decision_lineage": {
+    "parent_trace_id": "4e2b1d9f7c3a0e8b5f2d4c1a9e7b3f0d",
+    "case_id": "SURV-2026-AAPL-048291",
+    "investigation_thread_id": "THREAD-AAPL-MAY20-LAYERING-003"
+  },
+
+  "influencing_parameters": [
+    {
+      "factor": "order_cancel_ratio_5min",
+      "value": 0.91,
+      "weight": 0.32,
+      "weight_source": "ml_model"
+    },
+    {
+      "factor": "order_to_trade_ratio",
+      "value": 47.3,
+      "weight": 0.28,
+      "weight_source": "ml_model"
+    },
+    {
+      "factor": "price_movement_post_cancel_bps",
+      "value": 8.2,
+      "weight": 0.19,
+      "weight_source": "ml_model"
+    },
+    {
+      "factor": "spoofed_volume_usd_estimate",
+      "value": 2840000,
+      "weight": 0.15,
+      "weight_source": "ml_model"
+    },
+    {
+      "factor": "participant_prior_alerts_90d",
+      "value": 3,
+      "weight": 0.06,
+      "weight_source": "ml_model"
+    },
+    {
+      "factor": "bid_side_directional_cancel_bias",
+      "value": "271 of 284 cancels were bid-side, not randomly distributed",
+      "weight": 0.45,
+      "weight_source": "llm_self_reported"
+    },
+    {
+      "factor": "market_making_exemption_applicable",
+      "value": false,
+      "weight": 0.35,
+      "weight_source": "llm_self_reported"
+    },
+    {
+      "factor": "recidivist_participant_pattern",
+      "value": "two prior L2 escalations for layering in 90 days",
+      "weight": 0.20,
+      "weight_source": "llm_self_reported"
+    }
+  ],
+
+  "policy_evaluation": [
+    {
+      "rule_id": "RTS6-P1-CANCEL-RATE",
+      "rule_name": "Excessive Order Cancellation Rate",
+      "verdict": "fail",
+      "confidence": 0.97,
+      "notes": "Cancel-to-order ratio of 91% in the 09:42–09:47 window far exceeds the 60% RTS 6 threshold. Pattern is directional: all cancelled orders were on the bid side immediately before a 8.2 bps downward price move."
+    },
+    {
+      "rule_id": "RTS6-P2-OTR",
+      "rule_name": "Order-to-Trade Ratio Threshold",
+      "verdict": "fail",
+      "confidence": 0.94,
+      "notes": "OTR of 47.3 against AAPL exceeds the firm's 20.0 intraday threshold and the exchange's 30.0 threshold. Consistent with algorithmic layering strategy."
+    },
+    {
+      "rule_id": "RTS6-P3-PRICE-IMPACT",
+      "rule_name": "Correlated Price Impact Post-Cancellation",
+      "verdict": "fail",
+      "confidence": 0.88,
+      "notes": "Statistically significant (p < 0.001) correlation between cancel events and subsequent 8.2 bps price dislocation. Pattern matches layering typology in ESMA Q&A 2023-07."
+    },
+    {
+      "rule_id": "RTS6-P4-PARTICIPANT-HISTORY",
+      "rule_name": "Participant Prior Alert History",
+      "verdict": "fail",
+      "confidence": 0.75,
+      "notes": "Account ACC-EU-8821 has 3 prior layering alerts in the last 90 days, two of which resulted in L2 escalation. Recurrence is a RTS 6 aggravating factor."
+    },
+    {
+      "rule_id": "RTS6-P5-LEGITIMATE-HEDGING",
+      "rule_name": "Legitimate Hedging / Market Making Exemption",
+      "verdict": "not_applicable",
+      "confidence": 0.91,
+      "notes": "Account ACC-EU-8821 does not hold a market-making agreement with the venue and is not registered as a systematic internaliser. Exemption does not apply."
+    }
+  ],
+
+  "data_at_decision": [
+    {
+      "source": "nasdaq-level2-feed",
+      "query": "symbol=AAPL&from=2026-05-20T09:42:00Z&to=2026-05-20T09:47:33Z&depth=10",
+      "payload_hash": "a7f3c9e2b4d1f8a6c3e0b7d4f2a9c6e3b0d7f4a2c9e6b3d0f7a4c1e8b5d2f9a6",
+      "payload_preview": "{\"symbol\":\"AAPL\",\"events\":312,\"cancels\":284,\"trades\":6,\"bid_levels_modified\":47,\"ask_levels_modified\":12,\"vwap_impact_bps\":8.2}"
+    },
+    {
+      "source": "participant-profile-db",
+      "query": "account_id=ACC-EU-8821&lookback_days=90&alert_types=[layering,spoofing,quote_stuffing]",
+      "payload_hash": "b2e9d6c3f0a7e4b1d8c5f2a9e6b3d0c7f4a1e8b5d2c9f6a3e0b7d4c1f8a5e2b9",
+      "payload_preview": "{\"account_id\":\"ACC-EU-8821\",\"entity\":\"Quant Capital Management AG\",\"jurisdiction\":\"DE\",\"prior_alerts\":[{\"date\":\"2026-03-14\",\"type\":\"layering\",\"outcome\":\"l2_escalation\"},{\"date\":\"2026-02-07\",\"type\":\"layering\",\"outcome\":\"l2_escalation\"},{\"date\":\"2026-01-19\",\"type\":\"spoofing\",\"outcome\":\"closed_no_action\"}]}"
+    },
+    {
+      "source": "consolidated-tape-aapl",
+      "query": "symbol=AAPL&date=2026-05-20&session=morning_auction_open",
+      "payload_hash": "c4f1a8e5b2d9c6f3a0e7b4d1c8f5a2e9b6d3c0f7a4e1b8d5c2f9a6e3b0d7c4f1",
+      "payload_preview": "{\"symbol\":\"AAPL\",\"open\":213.42,\"session_high\":214.18,\"session_low\":212.89,\"avg_spread_bps\":1.4,\"adv_20d\":52400000}"
+    }
+  ],
+
+  "prompt": "You are a Level 1 Trade Surveillance Agent operating under MiFID II RTS 6. Your task is to evaluate alert SURV-2026-AAPL-048291 for potential layering / spoofing activity.\n\nAlert summary: Account ACC-EU-8821 (Quant Capital Management AG, DE) generated a layering alert on AAPL between 09:42 and 09:47 UTC. The detection model flagged a 91% order cancel ratio, OTR of 47.3, and an 8.2 bps price impact correlated with cancel events.\n\nYou have access to the following tools: (1) nasdaq_level2_feed — retrieve Level 2 order book events for a symbol and time window; (2) participant_profile — retrieve account history, registration status, and prior alerts; (3) consolidated_tape — retrieve consolidated tape statistics.\n\nEvaluate each applicable RTS 6 policy rule. For each rule, state whether it passes, fails, is inconclusive, or is not applicable. Assign a confidence score. Then provide a severity score (0–10) and a recommended disposition (close, escalate_l2, escalate_legal). If you escalate, state your reason.\n\nAll reasoning must be explicit and auditable.",
+
+  "chain_of_thought": [
+    {
+      "step": 1,
+      "type": "observation",
+      "content": "Alert SURV-2026-AAPL-048291 presents three quantitative signals: (1) 91% order cancel ratio in a 5-minute window, (2) OTR of 47.3, and (3) 8.2 bps downward price movement correlated with the cancel events. I will retrieve the full Level 2 feed to validate the alert-model numbers before proceeding."
+    },
+    {
+      "step": 2,
+      "type": "tool_call_rationale",
+      "content": "Calling nasdaq_level2_feed for AAPL 09:42–09:47 to independently verify cancel-to-order ratio and directional bias of cancelled orders."
+    },
+    {
+      "step": 3,
+      "type": "observation",
+      "content": "Level 2 data confirms: 312 order events, 284 cancellations (91%), 6 trades. Of 284 cancellations, 271 were bid-side. The 12 ask-side cancellations occurred after the price had already moved downward, consistent with legitimate position management. The bid-side cancel pattern is directional and not explained by random order management."
+    },
+    {
+      "step": 4,
+      "type": "tool_call_rationale",
+      "content": "Calling participant_profile for ACC-EU-8821 to check registration status (market-maker exemption eligibility) and prior alert history."
+    },
+    {
+      "step": 5,
+      "type": "observation",
+      "content": "ACC-EU-8821 is registered as a proprietary trading firm, not a market maker or systematic internaliser. Three prior alerts in 90 days: two layering alerts both escalated to L2, one spoofing alert closed. Recidivism pattern is significant."
+    },
+    {
+      "step": 6,
+      "type": "analysis",
+      "content": "Applying RTS 6 policy ruleset: (P1) Cancel rate 91% >> 60% threshold → FAIL. (P2) OTR 47.3 >> 20.0 firm threshold → FAIL. (P3) Price impact correlation p<0.001 → FAIL. (P4) 3 prior alerts with 2 prior L2 escalations → FAIL as aggravating factor. (P5) Market-making exemption → NOT APPLICABLE. All four applicable policy rules fail."
+    },
+    {
+      "step": 7,
+      "type": "hypothesis",
+      "content": "Alternative hypothesis: Could the high OTR be explained by algorithmic market responsiveness to real quote changes? Checking consolidated tape — AAPL spread was 1.4 bps average during this window. A 8.2 bps price dislocation caused by legitimate information flow would be 5.8x the spread, which is atypical for large-cap equity. This does not support the legitimate-trading hypothesis."
+    },
+    {
+      "step": 8,
+      "type": "conclusion",
+      "content": "All RTS 6 policy rules applicable to layering fail with high confidence. The market-making exemption does not apply. The participant has a recidivist alert history. Estimated spoofed notional is $2.84M, which exceeds the firm's $500k mandatory-escalation threshold. I am escalating to L2 with severity score 8.4 / 10."
+    },
+    {
+      "step": 9,
+      "type": "observation",
+      "content": "Self-reported factor salience for this decision: The three factors I found most decisive — independent of the upstream detection model's feature weights — were: (1) bid-side directional cancel bias: 271 of 284 cancels were bid-side, not randomly distributed across the book. A genuine liquidity provider would show symmetric cancellation. This qualitative directional pattern is the strongest single indicator of intent. (2) Market-making exemption inapplicability: ACC-EU-8821 has no market-making agreement and is not a systematic internaliser, eliminating the only plausible legitimate explanation for the OTR and cancel ratio. (3) Recidivism: two prior L2 escalations for layering in 90 days establishes a pattern of wilful conduct rather than error. The upstream model's numeric features (OTR, cancel ratio, price impact) corroborated these conclusions but did not drive them independently."
+    }
+  ],
+
+  "tools_accessed": [
+    {
+      "tool_name": "nasdaq_level2_feed",
+      "timestamp": "2026-05-20T09:47:38.021Z",
+      "query": "symbol=AAPL&from=2026-05-20T09:42:00Z&to=2026-05-20T09:47:33Z&depth=10",
+      "latency_ms": 312
+    },
+    {
+      "tool_name": "participant_profile",
+      "timestamp": "2026-05-20T09:47:39.104Z",
+      "query": "account_id=ACC-EU-8821&lookback_days=90&alert_types=[layering,spoofing,quote_stuffing]",
+      "latency_ms": 187
+    },
+    {
+      "tool_name": "consolidated_tape",
+      "timestamp": "2026-05-20T09:47:40.033Z",
+      "query": "symbol=AAPL&date=2026-05-20&session=morning_auction_open",
+      "latency_ms": 94
+    }
+  ],
+
+  "tool_results": [
+    {
+      "tool_name": "nasdaq_level2_feed",
+      "payload": {
+        "symbol": "AAPL",
+        "events": 312,
+        "cancels": 284,
+        "trades": 6,
+        "bid_side_cancels": 271,
+        "ask_side_cancels": 13,
+        "cancel_ratio": 0.910,
+        "order_to_trade_ratio": 47.3,
+        "vwap_impact_bps": 8.2,
+        "price_correlation_p_value": 0.00031
+      }
+    },
+    {
+      "tool_name": "participant_profile",
+      "payload": {
+        "account_id": "ACC-EU-8821",
+        "entity": "Quant Capital Management AG",
+        "jurisdiction": "DE",
+        "registration_type": "proprietary_trader",
+        "market_maker": false,
+        "systematic_internaliser": false,
+        "prior_alerts": [
+          {"date": "2026-03-14", "type": "layering", "outcome": "l2_escalation"},
+          {"date": "2026-02-07", "type": "layering", "outcome": "l2_escalation"},
+          {"date": "2026-01-19", "type": "spoofing", "outcome": "closed_no_action"}
+        ]
+      }
+    },
+    {
+      "tool_name": "consolidated_tape",
+      "payload": {
+        "symbol": "AAPL",
+        "open": 213.42,
+        "session_high": 214.18,
+        "session_low": 212.89,
+        "avg_spread_bps": 1.4,
+        "adv_20d": 52400000,
+        "volatility_1d_bps": 35.2
+      }
+    }
+  ],
+
+  "final_action": {
+    "type": "escalate_l2",
+    "disposition": "Alert SURV-2026-AAPL-048291 is escalated to Level 2 review. All four applicable MiFID II RTS 6 policy rules (cancel rate, OTR, price impact correlation, participant history) fail with combined confidence of 0.89. The market-making exemption does not apply. Estimated spoofed notional of $2.84M exceeds the mandatory L2 escalation threshold of $500k. The participant, Quant Capital Management AG (ACC-EU-8821), has two prior layering escalations in the last 90 days, indicating recidivism. L2 should consider referral to the competent authority (BaFin) under MiFID II Art. 26.",
+    "severity_score": 8.4,
+    "escalated": true,
+    "escalation_reason": "all_rts6_rules_fail|spoofed_notional_exceeds_threshold|recidivist_participant"
+  },
+
+  "outcome_linkage": {
+    "type": "escalation_ticket",
+    "reference_id": "L2-2026-AAPL-048291-ESC",
+    "status": "in_progress",
+    "url": "https://surveillance.internal/cases/L2-2026-AAPL-048291-ESC"
+  }
+}

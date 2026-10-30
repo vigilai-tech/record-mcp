@@ -1,0 +1,18 @@
+id: REC-ESC-002
+title: Escalation recorded without a reason
+scope: trace
+severity: medium
+category: escalation
+check: escalation_without_reason
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)
+  - framework: eu_mar
+    ref: Art. 16
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+description: >
+  `final_action.escalated` is true but `escalation_reason` is empty. The reviewer receiving the
+  escalation, and any later examiner, cannot see what triggered it.
+remediation: Populate `final_action.escalation_reason` with machine-readable trigger codes.
+fields: [final_action.escalated, final_action.escalation_reason]

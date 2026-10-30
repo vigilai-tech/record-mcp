@@ -1,0 +1,21 @@
+id: REC-CHAIN-001
+title: Duplicate record_id across traces
+scope: chain
+severity: critical
+category: integrity
+check: duplicate_record_id
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(1)
+  - framework: sec
+    ref: 17a-4(a)
+  - framework: finra
+    ref: Rule 4511
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.430
+description: >
+  The same `record_id` appears on more than one trace in the input. The traces may be in
+  different cases. Records can then no longer be retrieved uniquely, and one may have
+  overwritten another.
+remediation: Mint a fresh UUIDv4 per decision, and never reuse or replay record_ids.
+fields: [record_id]

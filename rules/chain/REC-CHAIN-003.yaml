@@ -1,0 +1,30 @@
+id: REC-CHAIN-003
+title: Escalated case closed without human review
+scope: chain
+severity: high
+category: human_oversight
+check: deescalated_without_review
+params:
+  closing_actions:
+    - close_alert
+    - close_case
+    - dismiss
+    - dismiss_alert
+    - no_action
+    - no_further_action
+    - auto_close
+    - resolve
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)
+  - framework: finra
+    ref: Rule 3110
+  - framework: eu_mar
+    ref: Art. 16
+description: >
+  A trace in the case escalated to a human, but a later trace closed the case without any human
+  disposition recorded in between. The agent quietly undid its own escalation.
+remediation: >
+  Only allow a human, or a trace that records a human_disposition, to close a case that has been
+  escalated.
+fields: [final_action.escalated, final_action.type, human_disposition]

@@ -1,0 +1,18 @@
+id: REC-PROV-004
+title: External tools used without data provenance
+scope: trace
+severity: medium
+category: provenance
+check: tools_without_data_provenance
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(2)(b)
+  - framework: mifid2
+    ref: RTS 6 Art. 11
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.210
+description: >
+  The agent called external tools, but `data_at_decision` is empty, so there are no source
+  queries or payload hashes from which to reconstruct the data present when it decided.
+remediation: Record source, query, and payload_hash for every external data source in `data_at_decision`.
+fields: [tools_accessed, data_at_decision]

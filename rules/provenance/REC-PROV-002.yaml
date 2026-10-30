@@ -1,0 +1,16 @@
+id: REC-PROV-002
+title: Tool call without a recorded result
+scope: trace
+severity: low
+category: provenance
+check: tool_call_without_result
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(2)(b)
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.210
+description: >
+  A tool was called (`tools_accessed`) but no `tool_results` entry records what it returned. The
+  examiner cannot see what information the agent received.
+remediation: Record the payload, or the `error`, of every tool call in `tool_results`.
+fields: [tools_accessed.tool_name, tool_results]

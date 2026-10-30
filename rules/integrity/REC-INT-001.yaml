@@ -1,0 +1,16 @@
+id: REC-INT-001
+title: Chain-of-thought steps out of sequence
+scope: trace
+severity: low
+category: integrity
+check: cot_step_sequence
+citations:
+  - framework: eu_ai_act
+    ref: Art. 13(3)(d)
+  - framework: eu_ai_act
+    ref: Art. 12(1)
+description: >
+  `chain_of_thought[].step` values are not 1..n in order. Steps may have been dropped,
+  duplicated, or reordered after capture, which weakens the record of the reasoning.
+remediation: Number reasoning steps sequentially from 1 at capture time and never edit them afterwards.
+fields: [chain_of_thought.step]

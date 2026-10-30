@@ -1,0 +1,357 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/record-spec/record-spec/blob/main/schema.json",
+  "title": "RECORD",
+  "description": "Regulatory Evidence Capture of Reasoning and Decisions — an OpenInference extension for regulatory compliance in financial AI agents.",
+  "version": "0.1.0",
+  "type": "object",
+  "required": [
+    "record_id",
+    "timestamp",
+    "agent_id",
+    "agent_version",
+    "authority_basis",
+    "operating_domain",
+    "prompt",
+    "final_action"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "[REQUIRED] Globally unique identifier for this RECORD trace. Must be a UUIDv4.",
+      "examples": ["f47ac10b-58cc-4372-a567-0e02b2c3d479"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "[REQUIRED] ISO 8601 UTC timestamp marking when the agent decision was finalised.",
+      "examples": ["2026-05-20T14:32:01.123Z"]
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "[REQUIRED] Stable identifier for the agent system (e.g. service name or ARN).",
+      "examples": ["trade-surveillance-agent-v1", "arn:aws:lambda:us-east-1:123456789:function:aml-triage"]
+    },
+    "agent_version": {
+      "type": "string",
+      "description": "[REQUIRED] Semantic version of the agent model/code that produced this record.",
+      "examples": ["1.4.2", "2026-05-prod-7a3f"]
+    },
+    "authority_basis": {
+      "type": "array",
+      "description": "[REQUIRED] One or more regulatory obligations that govern this decision. Use dot-notation: <framework>.<article_or_section>.",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+\\.[a-z0-9_.]+$"
+      },
+      "examples": [
+        ["eu_ai_act.art_86", "mifid2.rts6"],
+        ["fincen_aml_nprm_2026.s_1010", "sr_11_7.model_risk"],
+        ["ecoa_reg_b.s202_9", "sox.s302"]
+      ]
+    },
+    "operating_domain": {
+      "type": "string",
+      "description": "[REQUIRED] Degree of human oversight under which the agent operated for this decision.",
+      "enum": ["autonomous", "supervised", "human_only"]
+    },
+    "influencing_parameters": {
+      "type": "array",
+      "description": "[RECOMMENDED] Factors, features, or signals that materially influenced the agent's reasoning. Each entry should capture the factor name, its value at decision time, and a normalised weight (0–1).",
+      "items": {
+        "type": "object",
+        "required": ["factor", "value"],
+        "properties": {
+          "factor": {
+            "type": "string",
+            "description": "Human-readable name of the feature or signal."
+          },
+          "value": {
+            "description": "Value of the factor at decision time. May be any JSON scalar."
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Normalised importance weight (0–1). Interpretation depends on weight_source."
+          },
+          "weight_source": {
+            "type": "string",
+            "enum": ["ml_model", "llm_self_reported", "rule_engine", "hybrid"],
+            "description": "How the weight was derived. ml_model: upstream statistical model (SHAP, feature importance). llm_self_reported: the LLM agent explicitly named this factor as decisive in its chain_of_thought. rule_engine: a deterministic rule assigned a fixed priority. hybrid: combination of sources."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "policy_evaluation": {
+      "type": "array",
+      "description": "[RECOMMENDED] Ordered list of policy rules evaluated during the decision. Captures rule identity, outcome, and the agent's confidence.",
+      "items": {
+        "type": "object",
+        "required": ["rule_id", "rule_name", "verdict"],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Unique identifier for the policy rule (e.g. 'RTS6-P1-ORDER-ENTRY')."
+          },
+          "rule_name": {
+            "type": "string",
+            "description": "Human-readable name of the rule."
+          },
+          "verdict": {
+            "type": "string",
+            "enum": ["pass", "fail", "inconclusive", "not_applicable"],
+            "description": "Outcome of evaluating this rule."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Agent's confidence in the verdict (0 = uncertain, 1 = certain)."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Free-text explanation of why the verdict was reached."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "decision_lineage": {
+      "type": "object",
+      "description": "[RECOMMENDED] Pointers linking this RECORD to upstream traces, cases, or investigation threads for full audit-chain reconstruction.",
+      "properties": {
+        "parent_trace_id": {
+          "type": "string",
+          "description": "OpenInference / OpenTelemetry trace ID of the parent span, if any."
+        },
+        "case_id": {
+          "type": "string",
+          "description": "Case or alert ID in the upstream case-management system."
+        },
+        "investigation_thread_id": {
+          "type": "string",
+          "description": "Identifier of a multi-step investigation thread grouping related RECORDs."
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_at_decision": {
+      "type": "array",
+      "description": "[RECOMMENDED] Inventory of external data sources queried before the decision. Payload hashes enable bit-exact reconstruction; previews aid reviewer comprehension.",
+      "items": {
+        "type": "object",
+        "required": ["source", "query", "payload_hash"],
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "Logical name or URI of the data source."
+          },
+          "query": {
+            "type": "string",
+            "description": "Exact query or filter sent to the source."
+          },
+          "payload_hash": {
+            "type": "string",
+            "description": "SHA-256 hex digest of the raw response payload."
+          },
+          "payload_preview": {
+            "type": "string",
+            "description": "Optional first 512 characters of the response for reviewer convenience."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "human_disposition": {
+      "type": "object",
+      "description": "[RECOMMENDED when operating_domain = supervised] Records the human analyst's final decision when a human reviewed the agent's recommendation.",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["override", "confirm", "abstain"],
+          "description": "Whether the human overrode, confirmed, or abstained from acting on the agent's recommendation."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Free-text justification provided by the human analyst."
+        },
+        "analyst_id": {
+          "type": "string",
+          "description": "Pseudonymous or hashed identifier of the analyst (do not store PII in plain text)."
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of the human review."
+        }
+      },
+      "additionalProperties": false
+    },
+    "outcome_linkage": {
+      "type": "object",
+      "description": "[RECOMMENDED] Links the decision to a downstream outcome or workflow artefact for closed-loop auditability.",
+      "required": ["type", "reference_id", "status"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Category of downstream artefact (e.g. 'sar_filing', 'escalation_ticket', 'trade_cancellation', 'credit_adjustment')."
+        },
+        "reference_id": {
+          "type": "string",
+          "description": "External identifier of the downstream artefact."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "in_progress", "completed", "rejected", "cancelled"],
+          "description": "Current lifecycle status of the downstream artefact."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional deep-link to the artefact in the downstream system."
+        }
+      },
+      "additionalProperties": false
+    },
+    "prompt": {
+      "type": "string",
+      "description": "[REQUIRED] Complete input instruction delivered to the agent, including any system prompt, injected context, and user request. Verbatim capture is required for reproducibility."
+    },
+    "chain_of_thought": {
+      "type": "array",
+      "description": "[RECOMMENDED] Ordered sequence of intermediate reasoning steps produced by the agent before reaching its final action.",
+      "items": {
+        "type": "object",
+        "required": ["step", "content"],
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "1-based sequence number of this reasoning step."
+          },
+          "content": {
+            "type": "string",
+            "description": "Verbatim or summarised text of this reasoning step."
+          },
+          "type": {
+            "type": "string",
+            "enum": ["observation", "hypothesis", "analysis", "conclusion", "tool_call_rationale"],
+            "description": "Optional semantic label for the reasoning step."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tools_accessed": {
+      "type": "array",
+      "description": "[RECOMMENDED] Log of external tools or APIs called during the agent's reasoning, in call order.",
+      "items": {
+        "type": "object",
+        "required": ["tool_name", "timestamp", "query"],
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "Logical name of the tool or API."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 UTC timestamp of the tool invocation."
+          },
+          "query": {
+            "type": "string",
+            "description": "Arguments or query string passed to the tool."
+          },
+          "latency_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Round-trip latency in milliseconds."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "tool_results": {
+      "type": "array",
+      "description": "[RECOMMENDED] Responses returned by each tool call. Parallel array to tools_accessed; tool_name is used as the join key.",
+      "items": {
+        "type": "object",
+        "required": ["tool_name", "payload"],
+        "properties": {
+          "tool_name": {
+            "type": "string",
+            "description": "Must match a tool_name entry in tools_accessed."
+          },
+          "payload": {
+            "description": "Full or summarised response returned by the tool. May be any JSON value."
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message if the tool call failed."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "final_action": {
+      "type": "object",
+      "description": "[REQUIRED] The agent's ultimate recommendation or decision for this case.",
+      "required": ["type", "disposition"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Category of action taken (e.g. 'escalate', 'close_alert', 'file_sar', 'approve', 'reject', 'recommend')."
+        },
+        "disposition": {
+          "type": "string",
+          "description": "Free-text summary of what the agent decided and why."
+        },
+        "severity_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Optional 0–10 risk or severity score supporting the disposition."
+        },
+        "escalated": {
+          "type": "boolean",
+          "description": "Whether the agent escalated this case to a human or higher-tier system."
+        },
+        "escalation_reason": {
+          "type": "string",
+          "description": "If escalated=true, the machine-readable or free-text reason for escalation."
+        }
+      },
+      "additionalProperties": false
+    },
+    "_comments": {
+      "type": "object",
+      "description": "[OPTIONAL] Human-readable annotation block explaining how this RECORD document was produced. Keys correspond to field names; values describe what the field contains and which system or layer produced it. Ignored by validators and consumers — present only for developer comprehension."
+    },
+    "openinference_span_id": {
+      "type": "string",
+      "description": "[OPTIONAL] OpenInference / OpenTelemetry span ID for correlation with the parent observability platform.",
+      "examples": ["5b8aa5a2d2c872e8321cf37308d69df2"]
+    },
+    "model_id": {
+      "type": "string",
+      "description": "[OPTIONAL] Identifier of the foundation model used (e.g. 'claude-opus-4-6', 'gpt-4o-2024-05-13').",
+      "examples": ["claude-sonnet-4-6", "gpt-4o-2024-05-13"]
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "[OPTIONAL] ISO 3166-1 alpha-2 or IANA jurisdiction tag indicating primary regulatory jurisdiction.",
+      "examples": ["EU", "US", "GB"]
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "[OPTIONAL] Version of the RECORD schema this document conforms to.",
+      "const": "0.1.0"
+    }
+  },
+  "additionalProperties": false
+}

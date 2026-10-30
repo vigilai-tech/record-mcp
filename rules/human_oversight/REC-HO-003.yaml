@@ -1,0 +1,21 @@
+id: REC-HO-003
+title: Declared operating domain contradicts recorded oversight
+scope: trace
+severity: medium
+category: human_oversight
+check: oversight_declaration_mismatch
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14
+  - framework: eu_ai_act
+    ref: Art. 26(5)
+  - framework: mifid2
+    ref: RTS 6 Art. 1
+description: >
+  `operating_domain` says one thing and `human_disposition` shows another. Either an `autonomous`
+  trace records a human confirm/override, or a `human_only` trace records no human decision. The
+  declared level of oversight is therefore wrong for this decision.
+remediation: >
+  Set `operating_domain` to the oversight that actually applied, or fix the human_disposition
+  write-back.
+fields: [operating_domain, human_disposition]

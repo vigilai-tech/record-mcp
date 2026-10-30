@@ -1,0 +1,26 @@
+id: REC-CHAIN-006
+title: SAR filed (or still unfiled) past the 30-day deadline
+scope: chain
+severity: high
+category: escalation
+check: sar_filing_deadline
+params:
+  max_days: 30
+  sar_outcome_types: [sar_filing]
+  filing_actions: [file_sar, submit_sar]
+  sar_decision_actions: [draft_sar, recommend_sar]
+citations:
+  - framework: bsa_fincen
+    ref: 31 CFR 1020.320(b)(3)
+  - framework: bsa_fincen
+    ref: 31 CFR 1010.320
+description: >
+  A SAR must be filed within 30 calendar days of initial detection of the facts that may justify
+  it. The earliest trace in the case is taken as initial detection. The rule fires when the
+  filing is recorded after the deadline, or when a SAR was started but is still unfiled at the
+  latest trace past the deadline.
+remediation: >
+  Track the SAR clock from the first alert trace and escalate filings that are close to the
+  deadline. If no suspect was identified, a firm pack can use the 60-day extension
+  (`max_days: 60`).
+fields: [timestamp, outcome_linkage, final_action.type]

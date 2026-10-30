@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run pytest
+      - name: README rule table is current
+        run: uv run python scripts/update_readme.py --check
+      - name: Vendored schema matches pinned record-spec commit
+        run: uv run python scripts/sync_schema.py --check
+      - name: Example chain reports its violations
+        run: |
+          uv run record-mcp check --chain --format json examples/aml_case_closed_without_review.jsonl > report.json || test $? -eq 1
+          grep -q '"REC-CHAIN-003"' report.json
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t record-mcp .
+      - run: docker run --rm --entrypoint record-mcp record-mcp rules --no-generated

@@ -1,0 +1,18 @@
+id: REC-PROV-001
+title: Tool result without a matching tool call
+scope: trace
+severity: medium
+category: provenance
+check: orphan_tool_result
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(2)(b)
+  - framework: mifid2
+    ref: RTS 6 Art. 11
+  - framework: record_spec
+    ref: tool_results.tool_name (join key to tools_accessed)
+description: >
+  A `tool_results` entry names a tool that does not appear in `tools_accessed`, so there is no
+  record of when it was called or with what query.
+remediation: Log every tool invocation in `tools_accessed` with the same `tool_name` as its result.
+fields: [tool_results.tool_name, tools_accessed.tool_name]

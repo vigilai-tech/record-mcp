@@ -1,0 +1,21 @@
+id: REC-CHAIN-005
+title: Downstream outcome status moved backwards
+scope: chain
+severity: medium
+category: integrity
+check: outcome_status_regression
+citations:
+  - framework: sec
+    ref: 17a-4(f)
+  - framework: finra
+    ref: Rule 4511
+  - framework: eu_ai_act
+    ref: Art. 12(1)
+description: >
+  The same `outcome_linkage.reference_id` moves backwards in status across the case (e.g.
+  completed → pending), or switches between terminal states. A finalised outcome record appears
+  to have been rewritten.
+remediation: >
+  Treat terminal outcome states as immutable. Open a new linked artefact instead of reopening one
+  that is closed.
+fields: [outcome_linkage.reference_id, outcome_linkage.status]

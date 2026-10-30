@@ -1,0 +1,17 @@
+id: REC-HO-002
+title: Human override recorded without a rationale
+scope: trace
+severity: medium
+category: human_oversight
+check: override_without_rationale
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)(d)
+  - framework: finra
+    ref: Rule 3110
+description: >
+  A human overrode the agent (`human_disposition.action: override`) but did not record why.
+  Without the rationale, nobody can later judge whether the override was reasonable, or learn
+  from where the agent went wrong.
+remediation: Require a non-empty `human_disposition.rationale` whenever action is `override`.
+fields: [human_disposition.action, human_disposition.rationale]

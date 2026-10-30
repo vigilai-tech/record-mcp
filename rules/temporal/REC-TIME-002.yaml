@@ -1,0 +1,24 @@
+id: REC-TIME-002
+title: Tool call timestamped after the decision was finalised
+scope: trace
+severity: medium
+category: temporal
+check: tool_call_after_decision
+params:
+  tolerance_ms: 0
+citations:
+  - framework: eu_ai_act
+    ref: Art. 12(2)(a)
+  - framework: mifid2
+    ref: RTS 25
+  - framework: sec
+    ref: 17a-4(a)
+description: >
+  A `tools_accessed` call is timestamped after the trace `timestamp`, which RECORD defines as the
+  moment the decision was finalised. Either the decision timestamp was taken at the wrong point
+  (for example at request start), or the decision relied on data fetched after it was made.
+  Either way, the order of events cannot be reconstructed reliably.
+remediation: >
+  Stamp `timestamp` when the final action is produced, after every tool call, using the same
+  synchronised UTC clock as the tool log.
+fields: [timestamp, tools_accessed.timestamp]

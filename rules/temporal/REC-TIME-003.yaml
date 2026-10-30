@@ -1,0 +1,19 @@
+id: REC-TIME-003
+title: Timestamp is not valid ISO 8601 UTC
+scope: trace
+severity: medium
+category: temporal
+check: timestamp_not_utc
+citations:
+  - framework: mifid2
+    ref: RTS 25 Art. 1
+  - framework: eu_ai_act
+    ref: Art. 12(2)(a)
+  - framework: record_spec
+    ref: timestamp (ISO 8601 UTC)
+description: >
+  A decision, review, or tool timestamp cannot be parsed, has no offset, or uses a non-UTC
+  offset. The schema's `date-time` format is not enforced by validators, so this rule catches
+  timestamps that cannot be placed on one UTC timeline.
+remediation: Emit timestamps as ISO 8601 with a `Z` (or +00:00) suffix.
+fields: [timestamp, human_disposition.reviewed_at, tools_accessed.timestamp]

@@ -1,0 +1,85 @@
+# Framework registry for the violation catalog.
+#
+# Every rule citation must name a framework id from this file. `authority_prefixes` are the
+# dot-notation prefixes a RECORD trace uses in `authority_basis` (e.g. `eu_ai_act.art_86`).
+# `gap_analyses` decides which record-py GapAnalyzer regulation runs for a trace: a regulation
+# runs when any authority_basis entry matches one of its `triggers` (fnmatch patterns), or when
+# the caller asks for its framework explicitly.
+
+frameworks:
+  - id: eu_ai_act
+    name: EU AI Act
+    citation: Regulation (EU) 2024/1689
+    url: https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+    authority_prefixes: [eu_ai_act]
+
+  - id: mifid2
+    name: MiFID II / MiFIR (incl. RTS 6 and RTS 25)
+    citation: Directive 2014/65/EU; Regulation (EU) 600/2014; Delegated Regulations (EU) 2017/589 (RTS 6) and 2017/574 (RTS 25)
+    url: https://eur-lex.europa.eu/eli/dir/2014/65/oj
+    authority_prefixes: [mifid2, mifir]
+
+  - id: eu_mar
+    name: Market Abuse Regulation
+    citation: Regulation (EU) 596/2014
+    url: https://eur-lex.europa.eu/eli/reg/2014/596/oj
+    authority_prefixes: [eu_mar, mar]
+
+  - id: sec
+    name: SEC broker-dealer recordkeeping and anti-fraud rules
+    citation: 17 CFR 240.17a-4; 17 CFR 240.10b-5
+    url: https://www.ecfr.gov/current/title-17/section-240.17a-4
+    authority_prefixes: [sec]
+
+  - id: finra
+    name: FINRA Rules
+    citation: FINRA Rule 3110 (Supervision); FINRA Rule 4511 (Books and Records)
+    url: https://www.finra.org/rules-guidance/rulebooks/finra-rules
+    authority_prefixes: [finra]
+
+  - id: bsa_fincen
+    name: Bank Secrecy Act / FinCEN AML rules
+    citation: 31 CFR Chapter X; FinCEN AML NPRM 2026
+    url: https://www.ecfr.gov/current/title-31/subtitle-B/chapter-X
+    authority_prefixes: [fincen_aml_nprm_2026, fincen, bsa]
+
+  - id: sox
+    name: Sarbanes-Oxley Act
+    citation: SOX §302 (15 USC 7241)
+    url: https://www.law.cornell.edu/uscode/text/15/7241
+    authority_prefixes: [sox]
+
+  - id: fed_mrm
+    name: Federal Reserve model risk management guidance
+    citation: SR 11-7 (superseded by SR 26-2)
+    url: https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm
+    authority_prefixes: [sr_11_7, sr_26_2]
+
+  - id: ecoa_reg_b
+    name: Equal Credit Opportunity Act / Regulation B
+    citation: 12 CFR Part 1002
+    url: https://www.ecfr.gov/current/title-12/chapter-X/part-1002
+    authority_prefixes: [ecoa_reg_b, ecoa]
+
+  - id: gdpr
+    name: General Data Protection Regulation
+    citation: Regulation (EU) 2016/679
+    url: https://eur-lex.europa.eu/eli/reg/2016/679/oj
+    authority_prefixes: [gdpr]
+
+  - id: record_spec
+    name: RECORD specification
+    citation: RECORD schema.json v0.1.0
+    url: https://github.com/vigilai-tech/record-spec
+    authority_prefixes: []
+
+gap_analyses:
+  - regulation: fincen_nprm_2026
+    framework: bsa_fincen
+    triggers: ["fincen_aml_nprm_2026.*", "fincen.*", "bsa.*"]
+  - regulation: eu_ai_act_art86
+    framework: eu_ai_act
+    triggers: ["eu_ai_act.art_86*"]
+  - regulation: mifid2_rts6
+    framework: mifid2
+    triggers: ["mifid2.*"]

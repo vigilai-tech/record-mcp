@@ -1,0 +1,19 @@
+id: REC-HO-004
+title: Analyst identifier stored as plaintext PII
+scope: trace
+severity: medium
+category: human_oversight
+check: analyst_id_plaintext_pii
+citations:
+  - framework: record_spec
+    ref: human_disposition.analyst_id
+  - framework: gdpr
+    ref: Art. 5(1)(c)
+  - framework: gdpr
+    ref: Art. 25(1)
+description: >
+  `human_disposition.analyst_id` looks like an email address, a personal name, or a phone number.
+  RECORD requires a pseudonymous or hashed identifier, so that reviewer identity does not spread
+  into every downstream audit store.
+remediation: Store a pseudonymous ID or a keyed hash, and resolve it to the person through HR/IAM.
+fields: [human_disposition.analyst_id]

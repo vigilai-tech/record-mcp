@@ -1,0 +1,19 @@
+id: REC-TIME-001
+title: Human review timestamped before the decision
+scope: trace
+severity: high
+category: temporal
+check: review_before_decision
+citations:
+  - framework: mifid2
+    ref: RTS 6 Art. 16
+  - framework: sec
+    ref: 17a-4(a)
+  - framework: finra
+    ref: Rule 4511
+description: >
+  `human_disposition.reviewed_at` is earlier than the decision `timestamp`. A review cannot come
+  before the decision it reviews, so either the clocks or the write-back are wrong, and the
+  oversight record is unreliable.
+remediation: Write `reviewed_at` from a synchronised UTC clock at the moment the reviewer acts.
+fields: [timestamp, human_disposition.reviewed_at]

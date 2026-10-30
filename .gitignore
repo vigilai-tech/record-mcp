@@ -1,0 +1,15 @@
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# environments / builds
+.venv/
+dist/
+build/
+*.egg-info/
+
+# common editor / OS noise
+.DS_Store
+.env

@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "record-mcp"
+version = "0.1.0"
+description = "MCP server that checks RECORD audit traces (and chains of traces) for regulatory and policy violations"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+authors = [{ name = "VigilAI" }]
+keywords = ["mcp", "record", "audit", "compliance", "eu-ai-act", "mifid", "aml"]
+dependencies = [
+    "mcp>=2.3,<3",
+    "jsonschema>=4.18",
+    "pyyaml>=6",
+    "pydantic>=2.7",
+    # record-py is not on PyPI yet; pinned to the record-spec commit whose schema.json is vendored here.
+    "record-py @ git+https://github.com/vigilai-tech/record-spec.git@3bca63361e63aff0c0e4995f2ac58d837516cad3#subdirectory=record-py",
+]
+
+[project.scripts]
+record-mcp = "record_mcp.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/vigilai-tech/record-mcp"
+Specification = "https://github.com/vigilai-tech/record-spec"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/record_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"rules" = "record_mcp/rules"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

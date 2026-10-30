@@ -1,0 +1,20 @@
+id: REC-INT-002
+title: Authority basis names an unrecognised framework
+scope: trace
+severity: low
+category: integrity
+check: unknown_authority_framework
+# params.known_prefixes defaults to every authority_prefix in frameworks.yaml.
+citations:
+  - framework: record_spec
+    ref: authority_basis (<framework>.<article_or_section>)
+  - framework: eu_ai_act
+    ref: Art. 86(1)
+description: >
+  An `authority_basis` entry's framework prefix is not in the framework registry, for example the
+  `unknown.unknown` placeholder written by the OpenInference adapter. The decision then cannot be
+  linked to the obligation that governs it.
+remediation: >
+  Use a registered framework prefix (see `list_frameworks`), or add the framework to
+  frameworks.yaml with a citation.
+fields: [authority_basis]

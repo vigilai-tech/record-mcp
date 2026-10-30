@@ -1,0 +1,20 @@
+id: REC-SCHEMA-001
+title: Trace does not conform to the RECORD schema
+scope: trace
+severity: high
+category: schema
+check: schema_conformance
+framework_agnostic: true
+citations:
+  - framework: record_spec
+    ref: schema.json (JSON Schema draft-07)
+  - framework: eu_ai_act
+    ref: Art. 12(1)
+description: >
+  The trace fails JSON Schema validation against the RECORD schema (missing required fields,
+  wrong types, values outside enums, or unknown properties). A trace that does not conform cannot
+  be relied on as structured evidence. One violation is reported per validation error.
+remediation: >
+  Fix the field named in the violation path so the document validates against schema.json, e.g.
+  with `record validate <file>` from record-py.
+fields: []

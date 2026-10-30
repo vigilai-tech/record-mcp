@@ -1,0 +1,19 @@
+id: REC-CHAIN-004
+title: Agent reasserted an action a human overrode
+scope: chain
+severity: medium
+category: human_oversight
+check: overridden_action_reasserted
+citations:
+  - framework: eu_ai_act
+    ref: Art. 14(4)(d)
+  - framework: finra
+    ref: Rule 3110
+description: >
+  A human overrode an agent action, and a later trace in the same case proposes that same action
+  again without a new human confirmation. This suggests the override is being ignored or worked
+  around.
+remediation: >
+  Feed human overrides back into the agent's context for the case, and require confirmation
+  before the overridden action can be proposed again.
+fields: [human_disposition.action, final_action.type]
